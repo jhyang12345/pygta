@@ -77,6 +77,7 @@ def draw_lanes(img, lines, color=[0, 255, 255], thickness=3):
 
         lane1_id = top_lanes[0][0]
         lane2_id = top_lanes[1][0]
+        print(lane1_id, lane2_id)
 
         def average_lane(lane_data):
             x1s = []
@@ -171,12 +172,12 @@ def main():
         #cv2.imshow('window', new_screen)
         cv2.imshow("window2", cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB))
 
-        if m1 < 0 and m2 < 0:
-            controls.right()
-        elif m1 > 0 and m2 > 0:
-            controls.left()
-        else:
-            controls.straight()
+#        if m1 < 0 and m2 < 0:
+#            controls.right()
+#        elif m1 > 0 and m2 > 0:
+#            controls.left()
+#        else:
+#            controls.straight()
 
         #cv2.imshow('window',cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
         if cv2.waitKey(25) & 0xFF == ord('q'):
