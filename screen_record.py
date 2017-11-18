@@ -5,8 +5,10 @@ from PIL import ImageGrab
 import cv2
 import time
 import pyautogui
+from grabscreen import grab_screen
 from directkeys import PressKey, W, A, S, D
 from statistics import mean
+import controls
 
 def draw_lanes(img, lines, color=[0, 255, 255], thickness=3):
 
@@ -91,7 +93,7 @@ def draw_lanes(img, lines, color=[0, 255, 255], thickness=3):
         l1_x1, l1_y1, l1_x2, l1_y2 = average_lane(final_lanes[lane1_id])
         l2_x1, l2_y1, l2_x2, l2_y2 = average_lane(final_lanes[lane2_id])
 
-        return [l1_x1, l1_y1, l1_x2, l1_y2], [l2_x1, l2_y1, l2_x2, l2_y2]
+        return [l1_x1, l1_y1, l1_x2, l1_y2], [l2_x1, l2_y1, l2_x2, l2_y2], lane1_id, lane2_id
     except Exception as e:
         print(str(e))
 
@@ -108,8 +110,10 @@ def process_img(image):
     processed_img = roi(processed_img, [vertices])
 
     lines = cv2.HoughLinesP(processed_img, 1, np.pi / 180, 180, 20, 15)
+    m1 = 0
+    m2 = 0
     try:
-        l1, l2 = draw_lanes(original_image, lines)
+        l1, l2, m1, m2 = draw_lanes(original_image, lines)
         cv2.line(original_image, (l1[0], l1[1]), (l1[2], l1[3]), [0,255,0], 30)
         cv2.line(original_image, (l2[0], l2[1]), (l2[2], l2[3]), [0,255,0], 30)
     except Exception as e:
@@ -124,7 +128,7 @@ def process_img(image):
     except Exception as e:
         pass
 
-    return processed_img, original_image
+    return processed_img, original_image, m1, m2
 
 def roi(img, vertices):
     #blank mask:
@@ -160,12 +164,20 @@ def main():
     last_time = time.time()
     while True:
         #PressKey(W)
-        screen =  np.array(ImageGrab.grab(bbox=(0,40,800,640)))
+        screen = grab_screen(region=(0, 40, 800, 640))
         #print('Frame took {} seconds'.format(time.time()-last_time))
         last_time = time.time()
-        new_screen, original_image = process_img(screen)
-        cv2.imshow('window', new_screen)
+        new_screen, original_image, m1, m2 = process_img(screen)
+        #cv2.imshow('window', new_screen)
         cv2.imshow("window2", cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB))
+
+        if m1 < 0 and m2 < 0:
+            controls.right()
+        elif m1 > 0 and m2 > 0:
+            controls.left()
+        else:
+            controls.straight()
+
         #cv2.imshow('window',cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
